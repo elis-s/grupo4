@@ -1,0 +1,10 @@
+{
+  "/api": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true,
+    "headers": {
+      "X-Frontend-Key": "COLOQUE-AQUI-O-MESMO-FRONTEND_KEY-DO-local.properties"
+    }
+  }
+}

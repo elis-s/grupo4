@@ -1,0 +1,72 @@
+# Implantacao da secao 7.1: so o servidor do Front-End e exposto (HTTPS).
+# Back-End e banco ficam numa rede interna, sem portas publicadas (RNF005, RNF006).
+# Antes de subir: copie .env.exemplo para .env e preencha os segredos.
+services:
+
+  banco:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: clinica
+      POSTGRES_USER: clinica_owner
+      POSTGRES_PASSWORD: ${DB_OWNER_PASSWORD}
+    # pg_hba.conf so aceita conexoes vindas do Back-End (secao 6.5)
+    command: ["postgres", "-c", "hba_file=/etc/postgresql/pg_hba.conf"]
+    volumes:
+      - dados-banco:/var/lib/postgresql/data
+      - ./deploy/postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+    networks:
+      rede-interna:
+        ipv4_address: 172.28.0.10
+    # sem "ports": o banco nao e acessivel de fora
+
+  backend:
+    build: .
+    depends_on:
+      - banco
+    environment:
+      DB_URL: jdbc:postgresql://banco:5432/clinica
+      DB_OWNER_USER: clinica_owner
+      DB_OWNER_PASSWORD: ${DB_OWNER_PASSWORD}
+      DB_APP_USER: clinica_app
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_KEY: ${FRONTEND_KEY}
+      FRONTEND_URL: ${FRONTEND_URL}
+      SERVER_ADDRESS: 0.0.0.0
+      # para a apresentacao, com os dados de teste; em producao use so classpath:db/migration
+      FLYWAY_LOCATIONS: classpath:db/migration,classpath:db/testData
+    networks:
+      rede-interna:
+        ipv4_address: 172.28.0.20
+    # sem "ports": so o servidor do Front-End alcanca o Back-End
+
+  frontend:
+    image: nginx:1.27-alpine
+    depends_on:
+      - backend
+    ports:
+      - "443:443"
+      - "80:80"
+    environment:
+      FRONTEND_KEY: ${FRONTEND_KEY}
+    volumes:
+      # proxy reverso /api -> Back-End, acrescentando X-Frontend-Key (secao 6.4)
+      - ./deploy/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      # build do Angular (ng build) e certificado HTTPS
+      - ./deploy/frontend-dist:/usr/share/nginx/html:ro
+      - ./deploy/certs:/etc/nginx/certs:ro
+    networks:
+      rede-interna:
+        ipv4_address: 172.28.0.30
+      rede-publica: {}
+
+networks:
+  rede-interna:
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+  rede-publica: {}
+
+volumes:
+  dados-banco:

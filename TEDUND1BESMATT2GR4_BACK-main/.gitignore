@@ -1,0 +1,17 @@
+# Segredos locais (secao 6.5: nunca no repositorio)
+local.properties
+.env
+
+# Build e IDE
+target/
+.metadata/
+.settings/
+.classpath
+.project
+.factorypath
+*.class
+*.log
+deploy/certs/*.pem
+
+# Chave local usada pelo proxy do Angular
+frontend/proxy.conf.json

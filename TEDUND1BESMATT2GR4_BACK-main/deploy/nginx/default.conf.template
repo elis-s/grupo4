@@ -1,0 +1,32 @@
+# Servidor do Front-End (secoes 4.1 e 6.4): unico componente exposto aos usuarios.
+# Entrega a aplicacao Angular e repassa as chamadas /api ao Back-End pela rede interna.
+
+server {
+    listen 80;
+    return 301 https://$host$request_uri;   # RNF017: so HTTPS
+}
+
+server {
+    listen 443 ssl;
+    server_name _;
+
+    ssl_certificate     /etc/nginx/certs/cert.pem;
+    ssl_certificate_key /etc/nginx/certs/key.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+
+    root  /usr/share/nginx/html;
+    index index.html;
+
+    # Rotas do Angular
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Proxy reverso: o navegador so conhece o endereco do Front-End
+    location /api/ {
+        proxy_pass http://backend:8080/api/;          # endereco que so existe na rede interna
+        proxy_set_header X-Frontend-Key "${FRONTEND_KEY}";  # sobrescreve qualquer valor do cliente
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header Host $host;
+    }
+}

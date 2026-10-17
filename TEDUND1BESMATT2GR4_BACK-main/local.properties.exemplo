@@ -1,0 +1,16 @@
+# Copie este arquivo para local.properties (na mesma pasta) e preencha os valores.
+# local.properties esta no .gitignore e nao vai para o GitHub.
+
+DB_OWNER_USER=postgres
+DB_OWNER_PASSWORD=senha-do-postgres-da-sua-maquina
+
+DB_APP_USER=clinica_app
+DB_APP_PASSWORD=crie-uma-senha-para-o-usuario-da-aplicacao
+
+# minimo 32 caracteres
+JWT_SECRET=troque-por-um-segredo-longo-de-pelo-menos-32-caracteres
+
+# minimo 16 caracteres; o mesmo valor vai no proxy do Front-End
+FRONTEND_KEY=troque-por-uma-chave-longa
+
+FRONTEND_URL=http://localhost:4200

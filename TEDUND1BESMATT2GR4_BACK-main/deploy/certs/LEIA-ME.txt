@@ -1,0 +1,6 @@
+Coloque aqui o certificado HTTPS do servidor do Front-End: cert.pem e key.pem.
+Para testes locais, gere um certificado autoassinado:
+
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem -subj "/CN=localhost"
+
+Os arquivos .pem ficam fora do GitHub (.gitignore).
